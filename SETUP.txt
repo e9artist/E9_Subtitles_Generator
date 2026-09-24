@@ -1,0 +1,186 @@
+================================================================
+  SUBTITLES VIDEO GENERATOR — INSTALLATION GUIDE
+================================================================
+
+This program is written in Processing and uses FFmpeg to render
+video. If you already have both installed (and the Sound library
+in Processing installed), you're ready to go. If not, follow the
+instructions below for your operating system.
+
+================================================================
+  TABLE OF CONTENTS
+================================================================
+  1. What You Need
+  2. macOS Setup
+     2a. Install Processing
+     2b. Install Homebrew
+     2c. Install FFmpeg
+  3. Linux Setup
+     3a. Install Processing
+     3b. Install FFmpeg
+  4. Verifying Your Installation
+  5. Opening the Sketch
+
+================================================================
+  1. WHAT YOU NEED
+================================================================
+
+  - Processing 4 (the IDE and language)
+    - Sound library in Processing (Sketch->Import Library->Manage Libraries)
+  - FFmpeg (the video encoding tool the sketch calls)
+
+Both Processing and FFmpeg are free and open-source. The sketch 
+itself is just a folder of files; you run it from inside Processing.
+
+================================================================
+  2. macOS SETUP
+================================================================
+
+--- 2a. Install Processing ---
+
+1. Go to https://processing.org/download
+2. Download the macOS version (Apple Silicon or Intel).
+3. Open the downloaded .zip and drag the "Processing" app into
+   your Applications folder.
+4. Open Processing. macOS may warn you that it's from an
+   unidentified developer. If so, right-click the app and
+   choose "Open" instead of double-clicking.
+
+--- 2b. Install Homebrew ---
+
+Homebrew is a package manager for macOS. It makes installing
+FFmpeg a one-line command.
+
+1. Open Terminal (Spotlight search "Terminal").
+2. Paste this command and press Enter:
+
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+3. Follow the on-screen instructions. It will ask for your
+   password and may take a few minutes.
+4. When it finishes, it may tell you to run two additional
+   commands to add Homebrew to your PATH. Copy and paste those
+   exactly as shown. They usually look like:
+
+   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+   eval "$(/opt/homebrew/bin/brew shellenv)"
+
+5. Verify Homebrew is working by typing:
+
+   brew --version
+
+   You should see a version number.
+
+--- 2c. Install FFmpeg ---
+
+1. In Terminal, run:
+
+   brew install ffmpeg
+
+2. Homebrew will download FFmpeg and its dependencies. This can
+   take several minutes.
+3. When it finishes, verify:
+
+   ffmpeg -version
+
+   You should see FFmpeg's version information.
+
+================================================================
+  3. LINUX SETUP
+================================================================
+
+--- 3a. Install Processing ---
+
+1. Go to https://processing.org/download
+2. Download the Linux 64-bit version.
+3. Extract the .tar.gz to a location of your choice:
+
+   tar -xzf processing-*.tar.gz
+
+4. Run the "processing" executable inside the extracted folder.
+
+--- 3b. Install FFmpeg ---
+
+The simplest method is your distribution's package manager.
+
+  Ubuntu / Debian:
+  sudo apt update && sudo apt install ffmpeg
+
+  Fedora:
+  sudo dnf install ffmpeg
+
+  Arch:
+  sudo pacman -S ffmpeg
+
+After installation, verify with:
+
+   ffmpeg -version
+
+If your package manager's FFmpeg is missing the ProRes encoder
+(needed for some rendering workflows), you can download a static
+build from https://johnvansickle.com/ffmpeg/ instead. Extract it
+and point the sketch at the binary path.
+
+================================================================
+  4. VERIFYING YOUR INSTALLATION
+================================================================
+
+Before opening the sketch, run these two commands in Terminal:
+
+   ffmpeg -version
+
+You should see a version line like "ffmpeg version 7.0.2".
+
+If you see "command not found", FFmpeg isn't on your PATH. On
+macOS, re-run the PATH commands from the Homebrew installer. On
+Linux, check that your package manager installed it correctly.
+
+   ffmpeg -encoders | grep prores
+
+If you see "prores_ks" in the list, you have the encoder the
+sketch uses on macOS. On Linux, it may or may not be present
+depending on your distro's build. The sketch falls back to
+PNG-in-MOV output if ProRes isn't available, so it will still
+work either way. If you want ProRes on Linux, install a static
+build from johnvansickle.com and point the sketch at it.
+
+================================================================
+  5. OPENING THE SKETCH
+================================================================
+
+1. Open Processing.
+2. Go to File > Open and select the sketch folder.
+3. The main .pde file should load.
+4. If Processing prompts you to install any libraries (like
+   "Sound" or "Video"), click "Install" when asked. Note: the 
+   Sound library usually needs to be installed manually. Click
+   Sketch->Import Library->Manage Libraries and search for 
+   "Sound". Click Install.
+5. Press the Run button (the triangle in the top-left) or press
+   Ctrl+R (Cmd+R on Mac).
+
+If everything is set up correctly, the sketch window will open
+and display the first line of lyrics.txt.
+
+For MIDI setup instructions, see the header comment at the top
+of the sketch file.
+
+================================================================
+  TROUBLESHOOTING
+================================================================
+
+  "ffmpeg: command not found"
+  -> FFmpeg isn't installed or isn't on your PATH. Re-run the
+     relevant installation steps above.
+
+  "Error: lyrics.txt missing"
+  -> The sketch expects a lyrics.txt file in its data folder.
+     See the main README for the format.
+
+  Sketch runs but rendering fails
+  -> Check the Processing console for FFmpeg error messages.
+     Make sure ffmpeg -version works in Terminal first.
+
+  Processing won't open on macOS
+  -> Right-click the app and choose Open, then click Open again
+     in the confirmation dialog.

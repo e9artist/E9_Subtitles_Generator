@@ -1,0 +1,162 @@
+================================================================
+  SUBTITLES VIDEO GENERATOR — MIDI AND KEYBOARD REFERENCE
+================================================================
+
+KEYBOARD SHORTCUTS
+------------------
+SPACE   advance (commit + advance)
+B       blank screen and advance
+1-4     preset: 1=SimpleLine, 2=WordHighlight, 3=KaraokeFill, 4=WordReveal
+F       transition: none / fade / grow
+G       transition duration: 0.3 / 0.6 / 1.0 s
+J       highlight: box / outline / bold / grow
+K       color (cycles through presets)
+L       size (cycles through presets)
+N       font (cycles through fonts folder)
+U       word fade duration: 0.0 / 0.2 / 0.5 / 1.0 s
+P       capture current state as home snapshot
+R       reset to line 0
+O       open audio file
+ENTER   start / stop recording (manual start plays the count-in)
+S       save timestamps file
+X       export as MIDI file
++ / -   BPM up / down
+] / [   count-in beats up / down
+M       Record mode:  save timestamps and render video.
+        Render mode:  return to Record mode.
+H       toggle help panel
+Y       toggle on-screen reference
+
+LYRICS FILE FORMAT
+------------------
+Each line in lyrics.txt is one "content line" unless it is a marker.
+
+Markers (each on its own line):
+  [stanza]       start a multi-line stanza block
+  [endstanza]    end a multi-line stanza block
+  [emptyline]    inside a stanza: renders as empty vertical space.
+                 The recorder skips it — no tap needed.
+                 Using [emptyline] outside a stanza is a warning and ignored.
+  [blank]        clears the screen, is its own single-line stanza,
+                 and the recorder lands on it (SPACE advances past it).
+                 Using [blank] inside a [stanza] block is a syntax warning;
+                 the stanza auto-closes there.
+
+Anything outside [stanza] / [endstanza] is treated as single-line stanzas,
+one per line.
+
+Behavior summary:
+  - SimpleLine advances one whole stanza per tap.
+  - WordHighlight / KaraokeFill / WordReveal advance one word per tap,
+    then one line within the stanza, then to the next stanza.
+  - The transition (fade/grow) applies to the whole stanza block at once.
+  - The word fade applies to the newest word only.
+
+MIDI NOTES
+----------
+34      Start recording immediately (no count-in) — same as MIDI-driven
+        play; useful when the DAW drives the take.
+35      Stop recording — same as pressing ENTER while playing.
+36      Blank screen (same as B key)
+37      Reset to line 0 (fires automatically near the top of an exported
+        MIDI file, just before the first event's preset note)
+38      Advance (same as SPACE)
+48      SimpleLine preset
+49      WordHighlight preset
+50      KaraokeFill preset
+51      WordReveal preset
+
+PROGRAM CHANGE (bundle selector)
+--------------------------------
+Selects one of the 17 hard-coded bundles defined in initBundles().
+See the on-screen reference (press Y) for the current list, or check
+the "Bundle: <name>" line the sketch prints when a Program Change
+arrives.
+
+PC 0    Line Center
+PC 1    Subtitle Bottom
+PC 2    Title Top
+PC 3    Highlight Center Y
+PC 4    Highlight Bottom Y
+PC 5    Highlight Red
+PC 6    Highlight Green
+PC 7    Highlight Blue
+PC 8    Highlight Outline
+PC 9    Highlight Bold
+PC 10   Highlight Grow
+PC 11   Karaoke Center Y
+PC 12   Karaoke Bottom Y
+PC 13   Karaoke Red
+PC 14   Karaoke Green
+PC 15   Karaoke Blue
+PC 16   WordReveal Center
+
+CC NUMBERS
+----------
+20      Transition type (0=none, 1=fade, 2=grow)
+21      Transition duration (0=0.3s, 1=0.6s, 2=1.0s)
+22      Highlight style (0=box, 1=outline, 2=bold, 3=grow)
+23      Color (0-127, hue wheel: 0=yellow, 32=red, 64=green, 96=blue)
+24      Size (0-127, maps to 12-200px)
+25      Font index (0 = Default, then fonts in data/fonts/ alphabetical)
+26      Position X (0-127, 64 = center)
+27      Position Y (0-127, 64 = center; ~90 places text near bottom)
+28      Word fade duration (0-127, maps to 0.0 - 2.0 seconds)
+
+CCs take effect immediately in the sketch, whether the DAW is playing
+or stopped. Repeats of the same value are still processed (the sketch
+doesn't dedupe), so if a DAW resends a value on stop, it will overwrite
+the pending state. Use P to re-snapshot the home state if this happens.
+
+MIDI ROUND TRIP
+---------------
+1. Record a performance with the keyboard or MIDI.
+2. Press X to export the take as a .mid file.
+   (You do NOT have to save timestamps for the MIDI export to work.)
+3. Load the .mid into your DAW to edit timing, CCs, or notes.
+4. Route the DAW's MIDI output to the sketch's input device.
+5. Play the DAW. The sketch replays the visuals in sync.
+
+The exported MIDI includes:
+  - Note 34 at the top to start recording immediately
+  - Note 37 to reset to line 0
+  - CC messages for every modifier that changes during the take
+  - Preset notes (48-51) one tick before each advance
+  - Advance notes (38) at each event's time
+  - Note 35 to stop recording three seconds after the last event
+
+TIMESTAMPS FILE FORMAT
+----------------------
+One event per line, pipe-separated:
+
+  time|preset|action|line|word|transition|transDur|hiliteStyle|color|size|font|posX|posY|wordFade
+
+Older files with fewer fields still load. Missing trailing fields
+default to sensible values.
+
+PRO TIPS
+--------
+- Press P to lock the current state as the "home" snapshot that R and
+  the MIDI STOP command restore to. The home snapshot is also captured
+  automatically at the start of every recording.
+- Pressing M saves timestamps (overwriting the previous file for the
+  same audio) and renders. If you want to save without rendering,
+  press S.
+- If there is a timestamps file from a previous session in the sketch
+  folder and you press M before recording a take, the program will
+  use that timestamps file for rendering.
+- Word fade is per-event. Set it before tapping SPACE, and the fade
+  applies to that event's newest word. Fades are also written into
+  the exported MIDI as CC 28.
+- SimpleLine and word-based classes advance differently. This is
+  intentional: SimpleLine jumps whole stanzas, word-based classes
+  walk word-by-word through each line in a stanza before replacing it.
+
+LINUX MIDI SETUP
+----------------
+See the header comment at the top of the Processing sketch. The short
+version: run `sudo modprobe snd-virmidi midi_devs=1`, then `aconnect`
+to route Reaper (or whatever DAW) into VirMIDI, and THEN launch
+Processing. If you launch Processing first, quit it and re-run the
+aconnect step, because Java opens the raw MIDI device at startup and
+won't see routes created after that.
