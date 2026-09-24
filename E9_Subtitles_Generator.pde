@@ -1871,11 +1871,12 @@ void setupMidi() {
   // Auto-pick: prefer IAC on Mac, Midi Through on Linux
   String[] preferred = { "IAC", "Midi Through", "VirMIDI", "Virtual Raw MIDI" };
   MidiDevice.Info chosen = null;
-
+  
   for (String pref : preferred) {
     for (MidiDevice.Info info : infos) {
-      if (info.getName().contains(pref)) {
-        // Verify it has a Transmitter (input capability)
+      String name = info.getName();
+      String desc = info.getDescription();
+      if (name.contains(pref) || desc.contains(pref)) {
         try {
           MidiDevice dev = MidiSystem.getMidiDevice(info);
           if (dev.getMaxTransmitters() != 0) {
@@ -1883,8 +1884,7 @@ void setupMidi() {
             break;
           }
         }
-        catch (Exception e) { /* skip */
-        }
+        catch (Exception e) { /* skip */ }
       }
     }
     if (chosen != null) break;
