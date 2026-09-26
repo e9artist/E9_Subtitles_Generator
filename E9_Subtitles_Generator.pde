@@ -1,7 +1,7 @@
 /*
  =====================================================================================================
  APPLICATION: Subtitles Video Generator
- VERSION:     1.02
+ VERSION:     1.03
  DATE:        2026-09-16
  AUTHOR:      Eli Page (E9)
  =====================================================================================================
@@ -422,6 +422,7 @@ PFont[] fonts;
 PFont uiFont;
 String[] fontNames;
 String[] fontPaths;
+int[] fontColorBase = {255, 0, 0}; // *** THE MAIN FONT COLOR!! ***
 int FONT_COUNT = 0;
 int homePreset      = 0;
 int homeTransition  = TRANS_NONE;
@@ -935,12 +936,12 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
   if (presetType.equals("SimpleLine")) {
     if (usingGraphics) {
       g.noStroke();
-      g.fill(255, 255, 255, alphaScale);
+      g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
       g.textAlign(CENTER, CENTER);
       g.text(lineText, centerX, lineY);
     } else {
       noStroke();
-      fill(255, 255, 255, alphaScale);
+      fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
       textAlign(CENTER, CENTER);
       text(lineText, centerX, lineY);
     }
@@ -996,14 +997,14 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
         if (usingGraphics) {
           g.textSize(grownSize);
           g.noStroke();
-          g.fill(255, 255, 255, alphaScale * wordFadeT);
+          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
           g.textSize(sz);
         } else {
           textSize(grownSize);
           noStroke();
-          fill(255, 255, 255, alphaScale * wordFadeT);
+          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
           textSize(sz);
@@ -1011,31 +1012,31 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
       } else if (isActiveWord && hiliteStyle == HILITE_BOLD) {
         if (usingGraphics) {
           g.noStroke();
-          g.fill(255, 255, 255, alphaScale * wordFadeT);
+          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
           g.textAlign(LEFT, CENTER);
           for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++)
               g.text(words[i], x + dx * 0.7, y + dy * 0.7);
         } else {
           noStroke();
-          fill(255, 255, 255, alphaScale * wordFadeT);
+          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
           textAlign(LEFT, CENTER);
           for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++)
               text(words[i], x + dx * 0.7, y + dy * 0.7);
         }
       } else if (isActiveWord && hiliteStyle == HILITE_OUTLINE) {
-        strokeText(words[i], x, y, accent, color(255, 255, 255),
+        strokeText(words[i], x, y, accent, color(fontColorBase[0], fontColorBase[1], fontColorBase[2]),
           alphaScale * wordFadeT, usingGraphics, g);
       } else {
         if (usingGraphics) {
           g.noStroke();
-          g.fill(255, 255, 255, alphaScale);
+          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
         } else {
           noStroke();
-          fill(255, 255, 255, alphaScale);
+          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
         }
@@ -1077,12 +1078,12 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
       if (i < currentWordOnThisLine) {
         if (usingGraphics) {
           g.noStroke();
-          g.fill(255, 255, 255, alphaScale);
+          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
         } else {
           noStroke();
-          fill(255, 255, 255, alphaScale);
+          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
         }
@@ -1090,12 +1091,12 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
         float fade = (state == 1) ? wordFadeT : 1.0;
         if (usingGraphics) {
           g.noStroke();
-          g.fill(255, 255, 255, alphaScale * fade);
+          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * fade);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
         } else {
           noStroke();
-          fill(255, 255, 255, alphaScale * fade);
+          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * fade);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
         }
@@ -1182,6 +1183,7 @@ void drawRecordHelp() {
     "K       cycle color",
     "L       cycle size",
     "N       font: cycle through fonts folder",
+    "U       word fade duration: 0 / 0.2 / 0.5 / 1.0 s",
     "O       open audio file",
     "ENTER   start / stop recording",
     "S       save timestamps",
@@ -2439,6 +2441,7 @@ void drawReference() {
     "K       color (cycles presets)",
     "L       size (cycles presets)",
     "N       font (cycles fonts folder)",
+    "U       word fade duration: 0 / 0.2 / 0.5 / 1.0 s",
     "P       capture current state as home",
     "R       reset to line 0",
     "O       open audio file",
