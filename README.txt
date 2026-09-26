@@ -124,6 +124,7 @@ See MIDI_REFERENCE.txt for the full stanza reference.
 
    SPACE    advance (commit preset, advance word/line/stanza)
    B        blank screen
+   Y        curtain (blank while held) | Shift+Y  full reference
    ENTER    start or stop recording
    M        save + render (or return to record mode from render)
    R        reset to first line
@@ -141,7 +142,6 @@ See MIDI_REFERENCE.txt for the full stanza reference.
    P        capture "home" state (what R resets to)
 
    H        toggle help panel
-   Y        toggle on-screen reference
 
 The full reference is in MIDI_REFERENCE.txt, or press Y inside
 the sketch.

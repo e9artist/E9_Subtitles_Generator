@@ -6,6 +6,9 @@ KEYBOARD SHORTCUTS
 ------------------
 SPACE   advance (commit + advance)
 B       blank screen and advance
+Y       curtain: blank the screen while held; restore on release.
+        Does NOT advance. Works in any preset, including mid-stanza.
+Shift+Y toggle on-screen reference
 1-4     preset: 1=SimpleLine, 2=WordHighlight, 3=KaraokeFill, 4=WordReveal
 F       transition: none / fade / grow
 G       transition duration: 0.3 / 0.6 / 1.0 s
@@ -25,7 +28,17 @@ X       export as MIDI file
 M       Record mode:  save timestamps and render video.
         Render mode:  return to Record mode.
 H       toggle help panel
-Y       toggle on-screen reference
+
+Note on the curtain (Y):
+  Y is a momentary toggle, not an advance. While held, the screen is
+  transparent. On release, the previous display state is restored
+  (current line, word, preset, and modifiers). Unlike B, nothing in
+  the lyrics advances. This makes it useful for "flashing" a single
+  line of text against a dark or empty background, and it works in
+  any preset without disturbing the take. Both the press and the
+  release are recorded as separate events when a take is running,
+  and both are written into the exported MIDI (see notes 39 and 40
+  below).
 
 LYRICS FILE FORMAT
 ------------------
@@ -51,6 +64,8 @@ Behavior summary:
     then one line within the stanza, then to the next stanza.
   - The transition (fade/grow) applies to the whole stanza block at once.
   - The word fade applies to the newest word only.
+  - The curtain (Y) is independent of all of the above and never
+    advances the position.
 
 MIDI NOTES
 ----------
@@ -61,6 +76,8 @@ MIDI NOTES
 37      Reset to line 0 (fires automatically near the top of an exported
         MIDI file, just before the first event's preset note)
 38      Advance (same as SPACE)
+39      Curtain down (same as Y key down): blank the screen, no advance
+40      Curtain up (same as Y key up): restore the display
 48      SimpleLine preset
 49      WordHighlight preset
 50      KaraokeFill preset
@@ -69,7 +86,7 @@ MIDI NOTES
 PROGRAM CHANGE (bundle selector)
 --------------------------------
 Selects one of the 17 hard-coded bundles defined in initBundles().
-See the on-screen reference (press Y) for the current list, or check
+See the on-screen reference (Shift+Y) for the current list, or check
 the "Bundle: <name>" line the sketch prints when a Program Change
 arrives.
 
@@ -116,6 +133,8 @@ MIDI ROUND TRIP
 3. Load the .mid into your DAW to edit timing, CCs, or notes.
 4. Route the DAW's MIDI output to the sketch's input device.
 5. Play the DAW. The sketch replays the visuals in sync.
+6. If MIDI notes 34/35 (see below) were left in and the whole .mid file
+   was played a new timestamp take is recorded and can be saved/rendered.
 
 The exported MIDI includes:
   - Note 34 at the top to start recording immediately
@@ -123,16 +142,27 @@ The exported MIDI includes:
   - CC messages for every modifier that changes during the take
   - Preset notes (48-51) one tick before each advance
   - Advance notes (38) at each event's time
+  - Curtain notes (39 down, 40 up) at their recorded times
   - Note 35 to stop recording three seconds after the last event
 
 TIMESTAMPS FILE FORMAT
 ----------------------
 One event per line, pipe-separated:
 
-  time|preset|action|line|word|transition|transDur|hiliteStyle|color|size|font|posX|posY|wordFade
+  time|preset|action|line|word|transition|transDur|hiliteStyle|color|size|font|posX|posY|wordFade|visible
+
+The final column, `visible`, controls the curtain:
+  1 = show (normal)
+  0 = blank (curtain down)
+
+Curtain events use action strings "curtainOff" and "curtainOn" so the
+column is self-documenting in the file, but `visible` is the field the
+renderer actually honors.
 
 Older files with fewer fields still load. Missing trailing fields
-default to sensible values.
+default to sensible values — in particular, older timestamp files
+without the `visible` column are treated as fully visible (visible=1),
+so they render identically to how they did before.
 
 PRO TIPS
 --------
@@ -151,6 +181,13 @@ PRO TIPS
 - SimpleLine and word-based classes advance differently. This is
   intentional: SimpleLine jumps whole stanzas, word-based classes
   walk word-by-word through each line in a stanza before replacing it.
+- The curtain ignores transitions and word fades. It snaps to
+  transparent on press and snaps back on release, regardless of the
+  current transition / word-fade settings. This is by design — the
+  curtain is meant to be an instant "flash," not an animated one.
+- The curtain is a no-op while the screen is already blanked with B.
+  B owns the blank state until the next advance; Y does not interfere
+  with it, and no curtain events are recorded while B-blanked.
 
 LINUX MIDI SETUP
 ----------------
