@@ -293,10 +293,11 @@ class Event {
   float transDur = 1.0;
   float wordFade = 0.0;
   int hiliteStyle = HILITE_BOX;
-  int colorCC = 0;       // 0-127
-  int size = 24;       // 0-127
-  int posX = 64;       // 0-127
-  int posY = 64;       // 0-127
+  int colorCC = 0;
+  int size = 24;
+  int posX = 64;
+  int posY = 64;
+  int visible = 1;   // NEW: 1 = show, 0 = curtain blank
 
   Event(int t, String p, String a, int l, int w) {
     time = t;
@@ -849,6 +850,7 @@ int indexOfFont(String name) {
 // If g is null, draws to the main canvas. Otherwise to a PGraphics.
 // =========================================================
 void drawEventContent(Event ev, float alphaScale, float wordFadeT, PGraphics g) {
+  if (ev.visible == 0) return;
   int lineIdx = ev.line;
   int wordIdx = ev.word;
   if (lineIdx < 0 || lineIdx >= lyrics.length) return;
@@ -1172,6 +1174,7 @@ void drawRecordHelp() {
   String[] lines = {
     "SPACE   advance (commits pending modifiers)",
     "B       blank screen and advance",
+    "Y       curtain (blank while held) | Shift+Y  reference",
     "1-4     preset 1=SimpleLine 2=Highlight 3=Karaoke 4=Reveal",
     "F       transition: none / fade / grow",
     "G       cycle transition duration",
@@ -1188,8 +1191,7 @@ void drawRecordHelp() {
     "+ / -   BPM up / down",
     "] / [   count-in beats up / down",
     "M       switch to RENDER mode",
-    "H       toggle this help",
-    "Y       toggle full reference"
+    "H       toggle this help"
   };
 
   int perColumn = 10;
@@ -1293,7 +1295,7 @@ void renderEventFrames(int idx) {
   if (gapSeconds <= 0) gapSeconds = 0.04;
 
   // Blank events: just one transparent hold frame
-  if (e.action.equals("blank")) {
+  if (e.action.equals("blank") || (e.action.equals("curtainOff"))) {
     PGraphics pg = createGraphics(width, height);
     pg.beginDraw();
     pg.clear();
@@ -1553,7 +1555,13 @@ void keyPressedRecord() {
   }
 
   if (key == 'y' || key == 'Y') {
-    showReference = !showReference;
+    if (key == 'Y') {
+      // Shift+Y: toggle reference overlay
+      showReference = !showReference;
+      return;
+    }
+    // Plain y: curtain down
+    curtainDown();
     return;
   }
 
@@ -1588,6 +1596,16 @@ void keyPressedRecord() {
     if (recordState.equals("playing") || recordState.equals("countin")) tapAdvance(true);
     else tapAdvance(false);
     return;
+  }
+}
+
+void keyReleased() {
+  if (mode.equals("record")) keyReleasedRecord();
+}
+
+void keyReleasedRecord() {
+  if (key == 'y') {
+    curtainUp();
   }
 }
 
@@ -1700,6 +1718,67 @@ void blankAndAdvance(boolean record) {
   }
 }
 
+// Y key down: drop the curtain (blank screen) without advancing.
+void curtainDown() {
+  if (blanked) return;   // already blank from B key; nothing to do visually
+
+  boolean recording = recordState.equals("playing") || recordState.equals("countin");
+  int eventTime = recording ? (millis() - audioStartMs) : 0;
+
+  // Build an event that mirrors the current display state, but with visible=0.
+  Event base = currentDisplayedEvent;
+  Event e = new Event(eventTime, (base != null) ? base.preset : presetLabel(pendingPreset),
+                      "curtainOff", currentLine, currentWord);
+  e.transition  = TRANS_NONE;   // no transition on the curtain itself
+  e.transDur    = 0.0;
+  e.hiliteStyle = (base != null) ? base.hiliteStyle : pendingHilite;
+  e.colorCC     = (base != null) ? base.colorCC     : pendingColor;
+  e.size        = (base != null) ? base.size        : pendingSize;
+  e.fontName    = (base != null) ? base.fontName    : fontNames[pendingFontIdx];
+  e.posX        = (base != null) ? base.posX        : pendingPosX;
+  e.posY        = (base != null) ? base.posY        : pendingPosY;
+  e.wordFade    = 0.0;
+  e.visible     = 0;
+
+  currentDisplayedEvent = e;
+  currentEventStartMs = millis();
+
+  if (recording) {
+    events.add(e);
+    println("Curtain down at t=" + eventTime + "ms");
+  }
+}
+
+// Y key up: raise the curtain, restoring the underlying state.
+void curtainUp() {
+  if (blanked) return;   // B-key blank still owns the screen; don't undo it
+
+  boolean recording = recordState.equals("playing") || recordState.equals("countin");
+  int eventTime = recording ? (millis() - audioStartMs) : 0;
+
+  // Rebuild a normal (visible=1) event from current state.
+  // If nothing advanced during the hold, this is exactly what was showing before.
+  Event e = new Event(eventTime, presetLabel(pendingPreset), "curtainOn", currentLine, currentWord);
+  e.transition  = TRANS_NONE;
+  e.transDur    = 0.0;
+  e.hiliteStyle = pendingHilite;
+  e.colorCC     = pendingColor;
+  e.size        = pendingSize;
+  e.fontName    = fontNames[pendingFontIdx];
+  e.posX        = pendingPosX;
+  e.posY        = pendingPosY;
+  e.wordFade    = 0.0;
+  e.visible     = 1;
+
+  currentDisplayedEvent = e;
+  currentEventStartMs = millis();
+
+  if (recording) {
+    events.add(e);
+    println("Curtain up at t=" + eventTime + "ms");
+  }
+}
+
 void tapAdvance(boolean record) {
   blanked = false;
 
@@ -1786,6 +1865,7 @@ void loadTimestampsForRender() {
     if (p.length >= 12) e.posX        = int(p[11]);
     if (p.length >= 13) e.posY        = int(p[12]);
     if (p.length >= 14) e.wordFade    = float(p[13]);
+    if (p.length >= 15) e.visible     = int(p[14]);
     renderEvents.add(e);
   }
   println("Loaded " + renderEvents.size() + " events from " + tsFile);
@@ -1850,6 +1930,12 @@ class MyMidiReceiver implements Receiver {
       return;
     } else if (pitch == 38) {      // Advance, exactly like SPACE
       tapAdvance(recording);
+      return;
+    } else if (pitch == 39) {      // Curtain down
+      curtainDown();
+      return;
+    } else if (pitch == 40) {      // Curtain up
+      curtainUp();
       return;
     } else if (pitch >= 48 && pitch <= 51) {
       pendingPreset = pitch - 48;
@@ -1932,6 +2018,8 @@ void exportMidi() {
   int NOTE_BASE = 48;
   int NOTE_BLANK = 36;
   int NOTE_ADVANCE = 38;
+  int NOTE_CURTAIN_DOWN = 39;
+  int NOTE_CURTAIN_UP   = 40;
   int VELOCITY = 100;
 
   try {
@@ -1956,6 +2044,16 @@ void exportMidi() {
     for (int i = 0; i < events.size(); i++) {
       Event e = events.get(i);
       long tick = (long)(e.time * ticksPerMs) + 1;
+    
+      // Curtain events are standalone: emit their note and move on.
+      if (e.action.equals("curtainOff")) {
+        addNote(track, NOTE_CURTAIN_DOWN, tick, VELOCITY);
+        continue;
+      }
+      if (e.action.equals("curtainOn")) {
+        addNote(track, NOTE_CURTAIN_UP, tick, VELOCITY);
+        continue;
+      }
 
       // Look up the font index from the stored font name
       int fontIdx = indexOfFont(e.fontName);
@@ -2153,7 +2251,8 @@ void saveTimestamps() {
     lines[i] = e.time + "|" + e.preset + "|" + e.action + "|" + e.line + "|" + e.word
       + "|" + e.transition + "|" + e.transDur + "|" + e.hiliteStyle
       + "|" + e.colorCC + "|" + e.size + "|" + e.fontName
-      + "|" + e.posX + "|" + e.posY + "|" + e.wordFade;
+      + "|" + e.posX + "|" + e.posY + "|" + e.wordFade
+      + "|" + e.visible;
   }
   String outName = (audioPath == null || audioPath.length() == 0)
     ? "timestamps_freewheeling.txt"
@@ -2331,6 +2430,8 @@ void drawReference() {
   String[] keys = {
     "SPACE   advance (commit + advance)",
     "B       blank screen and advance",
+    "Y       curtain: blank while held, restore on release",
+    "⇧Y      toggle this reference",
     "1-3     preset: 1=SimpleLine, 2=WordHighlight, 3=KaraokeFill",
     "F       transition: none / fade / grow",
     "G       transition duration: 0.3 / 0.6 / 1.0 s",
@@ -2348,8 +2449,7 @@ void drawReference() {
     "] / [   count-in beats up / down",
     "M       SAVE+RENDER (in-memory take or disk timestamps if",
     "          empty) / return to RECORD after rendering",
-    "H       toggle help panel",
-    "Y       toggle this reference"
+    "H       toggle help panel"
   };
   for (int i = 0; i < keys.length; i++) {
     text(keys[i], col1X, topY + 30 + i * lineHeight);
@@ -2366,6 +2466,8 @@ void drawReference() {
     "36    Blank screen (same as B key)",
     "37    Reset to line 0",
     "38    Advance (same as SPACE)",
+    "39    Curtain down (blank, no advance)",
+    "40    Curtain up (restore)",
     "48    SimpleLine",
     "49    WordHighlight",
     "50    KaraokeFill",
