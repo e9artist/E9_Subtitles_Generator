@@ -13,7 +13,8 @@ Shift+Y toggle on-screen reference
 F       transition: none / fade / grow
 G       transition duration: 0.3 / 0.6 / 1.0 s
 J       highlight: box / outline / bold / grow
-K       color (cycles through presets)
+K       accent color (cycles through the accent palette)
+C       font color (cycles through the font-color palette)
 L       size (cycles through presets)
 N       font (cycles through fonts folder)
 U       word fade duration: 0.0 / 0.2 / 0.5 / 1.0 s
@@ -95,17 +96,17 @@ PC 1    Subtitle Bottom
 PC 2    Title Top
 PC 3    Highlight Center Y
 PC 4    Highlight Bottom Y
-PC 5    Highlight Red
-PC 6    Highlight Green
-PC 7    Highlight Blue
+PC 5    Highlight Yellow
+PC 6    Highlight Cyan
+PC 7    Highlight Black
 PC 8    Highlight Outline
 PC 9    Highlight Bold
 PC 10   Highlight Grow
 PC 11   Karaoke Center Y
 PC 12   Karaoke Bottom Y
 PC 13   Karaoke Red
-PC 14   Karaoke Green
-PC 15   Karaoke Blue
+PC 14   Karaoke Cyan
+PC 15   Karaoke Black
 PC 16   WordReveal Center
 
 CC NUMBERS
@@ -113,17 +114,51 @@ CC NUMBERS
 20      Transition type (0=none, 1=fade, 2=grow)
 21      Transition duration (0=0.3s, 1=0.6s, 2=1.0s)
 22      Highlight style (0=box, 1=outline, 2=bold, 3=grow)
-23      Color (0-127, hue wheel: 0=yellow, 32=red, 64=green, 96=blue)
+23      Accent color (palette index 0-127)
 24      Size (0-127, maps to 12-200px)
 25      Font index (0 = Default, then fonts in data/fonts/ alphabetical)
 26      Position X (0-127, 64 = center)
 27      Position Y (0-127, 64 = center; ~90 places text near bottom)
 28      Word fade duration (0-127, maps to 0.0 - 2.0 seconds)
+29      Font color (palette index 0-127)
 
 CCs take effect immediately in the sketch, whether the DAW is playing
 or stopped. Repeats of the same value are still processed (the sketch
 doesn't dedupe), so if a DAW resends a value on stop, it will overwrite
 the pending state. Use P to re-snapshot the home state if this happens.
+
+COLOR PALETTE (CC 23 and CC 29)
+-------------------------------
+Both accent color (CC 23) and font color (CC 29) index into the same
+128-entry color palette. The palette is generated at startup and
+covers a wide range of colors — not just a saturated hue wheel.
+
+Layout (approximate):
+  0-15      whites and grays, from pure white down to near-black
+  16-31     saturated hues at full brightness (16 hues around the wheel)
+  32-47     pastels of the same 16 hues
+  48-63     deep jewel tones
+  64-79     muted / earthy tones
+  80-95     neon
+  96-111    tinted neutrals
+  112-127   dark grays down to pure black
+
+Useful anchors:
+  CC 0    pure white
+  CC 16   red
+  CC 20   yellow
+  CC 24   cyan
+  CC 127  pure black
+
+Defaults:
+  Font color starts at 0 (white).
+  Accent color starts at 16 (red).
+
+The keyboard cycles (K for accent, C for font color) walk through a
+short list of palette indices rather than all 128 — that list lives
+in ACCENT_CYCLE and FONT_COLOR_CYCLE near the top of the sketch, and
+is easily edited. The first entry of each array is the default value
+for that role.
 
 MIDI ROUND TRIP
 ---------------
@@ -149,7 +184,7 @@ TIMESTAMPS FILE FORMAT
 ----------------------
 One event per line, pipe-separated:
 
-  time|preset|action|line|word|transition|transDur|hiliteStyle|color|size|font|posX|posY|wordFade|visible
+  time|preset|action|line|word|transition|transDur|hiliteStyle|accent|size|font|posX|posY|wordFade|visible|fontColor
 
 The final column, `visible`, controls the curtain:
   1 = show (normal)
@@ -160,9 +195,17 @@ column is self-documenting in the file, but `visible` is the field the
 renderer actually honors.
 
 Older files with fewer fields still load. Missing trailing fields
-default to sensible values — in particular, older timestamp files
-without the `visible` column are treated as fully visible (visible=1),
-so they render identically to how they did before.
+default to sensible values. Older timestamp files without the
+`visible` column are treated as fully visible (visible=1), so they
+render as they did before the curtain feature was added. Files
+without the trailing `fontColor` column default to 0 (white), which
+is the current default font color.
+
+Note that the `accent` column was formerly named `color` and, before
+that, held a hue-wheel value rather than a palette index. If you
+have very old timestamps files, their color values will map to
+different colors under the new palette. Re-rendering old takes may
+require manually adjusting this column, or just re-recording.
 
 PRO TIPS
 --------
@@ -178,6 +221,11 @@ PRO TIPS
 - Word fade is per-event. Set it before tapping SPACE, and the fade
   applies to that event's newest word. Fades are also written into
   the exported MIDI as CC 28.
+- Font color and accent color are independent. A white font with a
+  red accent is the default look. If you set the font to black for
+  a light background, you may want to bump the accent to something
+  bright (yellow, cyan) so highlights stay readable. Both values
+  are recorded per-event and round-trip through the MIDI export.
 - SimpleLine and word-based classes advance differently. This is
   intentional: SimpleLine jumps whole stanzas, word-based classes
   walk word-by-word through each line in a stanza before replacing it.

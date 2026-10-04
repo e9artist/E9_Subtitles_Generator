@@ -294,6 +294,7 @@ class Event {
   float wordFade = 0.0;
   int hiliteStyle = HILITE_BOX;
   int colorCC = 0;
+  int fontColorCC = 0;
   int size = 24;
   int posX = 64;
   int posY = 64;
@@ -324,19 +325,21 @@ class Bundle {
   int transDurIdx;
   int hilite;
   int colorCC;
+  int fontColorCC;
   int size;
   int fontIdx;
   int posX;
   int posY;
   float wordFade = 0.0;
 
-  Bundle(String n, int p, int t, int td, int h, int c, int s, int f, int px, int py, float wf) {
+  Bundle(String n, int p, int t, int td, int h, int hc, int fc, int s, int f, int px, int py, float wf) {
     name = n;
     preset = p;
     transition = t;
     transDurIdx = td;
     hilite = h;
-    colorCC = c;
+    colorCC = hc;
+    fontColorCC = fc;
     size = s;
     fontIdx = f;
     posX = px;
@@ -355,39 +358,40 @@ Bundle[] bundles;
  bundles[3] = new Bundle("Dramatic", 1, TRANS_FADE, 2, HILITE_OUTLINE, 96, 64, 0, 64, 64);
  }*/
 void initBundles() {
-  // Bundle(name, preset, transition, transDurIdx, hilite, colorCC, size, fontIdx, posX, posY)
+  // Bundle(name, preset, transition, transDurIdx, hilite, colorCC, fontColorCC, size, fontIdx, posX, posY, wordFade)
   //   name         : display label
-  //   preset       : 0=SimpleLine, 1=WordHighlight, 2=KaraokeFill
+  //   preset       : 0=SimpleLine, 1=WordHighlight, 2=KaraokeFill, 3=WordReveal
   //   transition   : 0=none, 1=fade, 2=grow
   //   transDurIdx  : 0=0.3s, 1=0.6s, 2=1.0s
   //   hilite       : 0=box, 1=outline, 2=bold, 3=grow
-  //   colorCC      : 0-127 (0=yellow, 32=red, 64=green, 96=blue)
+  //   colorCC      : palette index 0-127 (0=white, 16=red, 20=yellow, 24=cyan, 127=black)
+  //   fontColorCC  : palette index 0-127
   //   size         : 0-127 (maps to 12-200px)
   //   fontIdx      : index into fontNames[] (0 = Default)
   //   posX, posY   : 0-127 (0=edge, 64=center, 127=opposite edge)
 
   bundles = new Bundle[17];
   // --- Basic line presets ---
-  bundles[0]  = new Bundle("Line Center", 0, TRANS_NONE, 2, HILITE_BOX, 0, 24, 0, 64, 64, 0.0);
-  bundles[1]  = new Bundle("Subtitle Bottom", 0, TRANS_FADE, 1, HILITE_BOX, 0, 24, 0, 64, 90, 0.0);
-  bundles[2]  = new Bundle("Title Top", 0, TRANS_FADE, 2, HILITE_BOX, 0, 35, 0, 64, 15, 0.0);
+  bundles[0]  = new Bundle("Line Center",       0, TRANS_NONE, 2, HILITE_BOX,     0,  0, 24, 0, 64, 64, 0.0);
+  bundles[1]  = new Bundle("Subtitle Bottom",   0, TRANS_FADE, 1, HILITE_BOX,     0,  0, 24, 0, 64, 90, 0.0);
+  bundles[2]  = new Bundle("Title Top",         0, TRANS_FADE, 2, HILITE_BOX,     0,  0, 35, 0, 64, 15, 0.0);
   // --- Word highlight presets ---
-  bundles[3]  = new Bundle("Highlight Center Y", 1, TRANS_NONE, 2, HILITE_BOX, 0, 24, 0, 64, 64, 0.0);
-  bundles[4]  = new Bundle("Highlight Bottom Y", 1, TRANS_NONE, 2, HILITE_BOX, 0, 24, 0, 64, 90, 0.0);
-  bundles[5]  = new Bundle("Highlight Red", 1, TRANS_NONE, 2, HILITE_BOX, 32, 24, 0, 64, 64, 0.0);
-  bundles[6]  = new Bundle("Highlight Green", 1, TRANS_NONE, 2, HILITE_BOX, 64, 24, 0, 64, 64, 0.0);
-  bundles[7]  = new Bundle("Highlight Blue", 1, TRANS_NONE, 2, HILITE_BOX, 96, 24, 0, 64, 64, 0.0);
-  bundles[8]  = new Bundle("Highlight Outline", 1, TRANS_FADE, 1, HILITE_OUTLINE, 0, 35, 0, 64, 64, 0.3);
-  bundles[9]  = new Bundle("Highlight Bold", 1, TRANS_NONE, 2, HILITE_BOLD, 0, 24, 0, 64, 64, 0.0);
-  bundles[10] = new Bundle("Highlight Grow", 1, TRANS_NONE, 2, HILITE_GROW, 0, 24, 0, 64, 64, 0.0);
+  bundles[3]  = new Bundle("Highlight Center Y",1, TRANS_NONE, 2, HILITE_BOX,    16,  0, 24, 0, 64, 64, 0.0);
+  bundles[4]  = new Bundle("Highlight Bottom Y",1, TRANS_NONE, 2, HILITE_BOX,    16,  0, 24, 0, 64, 90, 0.0);
+  bundles[5]  = new Bundle("Highlight Yellow",  1, TRANS_NONE, 2, HILITE_BOX,    20,  0, 24, 0, 64, 64, 0.0);
+  bundles[6]  = new Bundle("Highlight Cyan",    1, TRANS_NONE, 2, HILITE_BOX,    24,  0, 24, 0, 64, 64, 0.0);
+  bundles[7]  = new Bundle("Highlight Black",   1, TRANS_NONE, 2, HILITE_BOX,   127,  0, 24, 0, 64, 64, 0.0);
+  bundles[8]  = new Bundle("Highlight Outline", 1, TRANS_FADE, 1, HILITE_OUTLINE,16,  0, 35, 0, 64, 64, 0.3);
+  bundles[9]  = new Bundle("Highlight Bold",    1, TRANS_NONE, 2, HILITE_BOLD,   16,  0, 24, 0, 64, 64, 0.0);
+  bundles[10] = new Bundle("Highlight Grow",    1, TRANS_NONE, 2, HILITE_GROW,   16,  0, 24, 0, 64, 64, 0.0);
   // --- Karaoke presets ---
-  bundles[11] = new Bundle("Karaoke Center Y", 2, TRANS_NONE, 2, HILITE_BOX, 0, 24, 0, 64, 64, 0.3);
-  bundles[12] = new Bundle("Karaoke Bottom Y", 2, TRANS_NONE, 2, HILITE_BOX, 0, 24, 0, 64, 90, 0.3);
-  bundles[13] = new Bundle("Karaoke Red", 2, TRANS_NONE, 2, HILITE_BOX, 32, 24, 0, 64, 64, 0.3);
-  bundles[14] = new Bundle("Karaoke Green", 2, TRANS_NONE, 2, HILITE_BOX, 64, 24, 0, 64, 64, 0.3);
-  bundles[15] = new Bundle("Karaoke Blue", 2, TRANS_NONE, 2, HILITE_BOX, 96, 24, 0, 64, 64, 0.3);
-  // --- Wordreveal presets ---
-  bundles[16]  = new Bundle("WordReveal Center", 3, TRANS_NONE, 2, HILITE_BOX, 0, 24, 0, 64, 64, 0.3);
+  bundles[11] = new Bundle("Karaoke Center Y",  2, TRANS_NONE, 2, HILITE_BOX,    20,  0, 24, 0, 64, 64, 0.3);
+  bundles[12] = new Bundle("Karaoke Bottom Y",  2, TRANS_NONE, 2, HILITE_BOX,    20,  0, 24, 0, 64, 90, 0.3);
+  bundles[13] = new Bundle("Karaoke Red",       2, TRANS_NONE, 2, HILITE_BOX,    16,  0, 24, 0, 64, 64, 0.3);
+  bundles[14] = new Bundle("Karaoke Cyan",      2, TRANS_NONE, 2, HILITE_BOX,    24,  0, 24, 0, 64, 64, 0.3);
+  bundles[15] = new Bundle("Karaoke Black",     2, TRANS_NONE, 2, HILITE_BOX,   127,  0, 24, 0, 64, 64, 0.3);
+  // --- WordReveal preset ---
+  bundles[16] = new Bundle("WordReveal Center", 3, TRANS_NONE, 2, HILITE_BOX,     0,  0, 24, 0, 64, 64, 0.3);
 }
 
 MidiDevice midiDevice = null;
@@ -422,19 +426,29 @@ PFont[] fonts;
 PFont uiFont;
 String[] fontNames;
 String[] fontPaths;
-int[] fontColorBase = {255, 0, 0}; // *** THE MAIN FONT COLOR!! ***
+// (font color is now per-event; see Event.fontColorCC)
 int FONT_COUNT = 0;
 int homePreset      = 0;
 int homeTransition  = TRANS_NONE;
 int homeTransDurIdx = 2;
 int homeHilite      = HILITE_BOX;
 int homeColor       = 0;
+int homeFontColor   = 0;
 int homeSize        = 24;
 int homeFontIdx     = 0;
 int homePosX        = 64;
 int homePosY        = 64;
 float homeWordFade = 0.0;
 float LINE_HEIGHT_MODIFIER = 1.4;
+
+// =========================================================
+// COLOR PALETTE (128 entries, indexed by CC value 0-127)
+// =========================================================
+color[] PALETTE = new color[128];
+
+// Cycle arrays: first element is the default.
+int[] ACCENT_CYCLE     = { 16, 0, 127, 20, 24, 28 };
+int[] FONT_COLOR_CYCLE = { 0, 127, 16, 20, 24, 28 };
 // =========================================================
 // MODIFIER STATE (all 0-127 for MIDI compatibility)
 // =========================================================
@@ -445,14 +459,15 @@ int pendingHilite = HILITE_BOX;       // 0-3
 int pendingFontIdx = 0;
 
 // Continuous values (0-127; CC sets directly, keyboard cycles presets)
-int pendingColor = 0;     // 0-127
+int pendingColor = 0;     // 0-127 (accent color, palette index)
+int pendingFontColor = 0; // 0-127 (font color, palette index)
 int pendingSize = 24;     // 0-127
 int pendingPosX = 64;     // 0-127, 64 = center
 int pendingPosY = 64;     // 0-127, 64 = center
 float pendingWordFade = 0.0;   // 0 = instant; positive = fade duration in seconds
 
 // Keyboard cycle presets for continuous values
-int[] COLOR_CYCLE = { 0, 32, 64, 96 };     // yellow, red, green, blue equivalents
+// (accent cycle is now ACCENT_CYCLE near the palette declaration)
 int[] SIZE_CYCLE  = { 13, 24, 35 };
 float[] WORD_FADE_CYCLE = { 0.0, 0.2, 0.5, 1.0 };
 // =========================================================
@@ -478,6 +493,11 @@ int pngCounter = 0;
 void setup() {
   size(1280, 720);
   textAlign(CENTER, CENTER);
+
+  buildPalette();
+  pendingColor     = ACCENT_CYCLE[0];
+  pendingFontColor = FONT_COLOR_CYCLE[0];
+
   ffmpegPath = findFFmpeg();
 
   lyrics = loadStrings("lyrics.txt");
@@ -560,7 +580,8 @@ void setup() {
     init.transition   = pendingTransition;
     init.transDur     = TRANS_DURATIONS[pendingTransDurIdx];
     init.hiliteStyle  = pendingHilite;
-    init.colorCC        = pendingColor;
+    init.colorCC      = pendingColor;
+    init.fontColorCC  = pendingFontColor;
     init.size         = pendingSize;
     init.fontName     = fontNames[pendingFontIdx];
     init.posX         = pendingPosX;
@@ -601,6 +622,82 @@ String findFFmpeg() {
   return "ffmpeg";
 }
 
+void buildPalette() {
+  int i = 0;
+
+  // ---- 0-15: Whites and grays ----
+  PALETTE[i++] = color(255, 255, 255);
+  PALETTE[i++] = color(245, 245, 245);
+  PALETTE[i++] = color(230, 230, 230);
+  PALETTE[i++] = color(210, 210, 210);
+  PALETTE[i++] = color(190, 190, 190);
+  PALETTE[i++] = color(170, 170, 170);
+  PALETTE[i++] = color(150, 150, 150);
+  PALETTE[i++] = color(130, 130, 130);
+  PALETTE[i++] = color(115, 115, 115);
+  PALETTE[i++] = color(100, 100, 100);
+  PALETTE[i++] = color( 85,  85,  85);
+  PALETTE[i++] = color( 72,  72,  72);
+  PALETTE[i++] = color( 60,  60,  60);
+  PALETTE[i++] = color( 48,  48,  48);
+  PALETTE[i++] = color( 36,  36,  36);
+  PALETTE[i++] = color( 24,  24,  24);
+
+  // ---- 16-31: Saturated hues at full brightness ----
+  for (int k = 0; k < 16; k++) {
+    PALETTE[i++] = colorFromHSB(k * 22.5, 1.0, 1.0);
+  }
+
+  // ---- 32-47: Pastels ----
+  for (int k = 0; k < 16; k++) {
+    PALETTE[i++] = colorFromHSB(k * 22.5, 0.35, 1.0);
+  }
+
+  // ---- 48-63: Deep jewel tones ----
+  for (int k = 0; k < 16; k++) {
+    PALETTE[i++] = colorFromHSB(k * 22.5, 1.0, 0.55);
+  }
+
+  // ---- 64-79: Muted / earthy ----
+  for (int k = 0; k < 16; k++) {
+    PALETTE[i++] = colorFromHSB(k * 22.5, 0.55, 0.75);
+  }
+
+  // ---- 80-95: Neon ----
+  for (int k = 0; k < 16; k++) {
+    PALETTE[i++] = colorFromHSB(k * 22.5, 0.85, 1.0);
+  }
+
+  // ---- 96-111: Tinted neutrals ----
+  for (int k = 0; k < 16; k++) {
+    PALETTE[i++] = colorFromHSB(k * 22.5, 0.20, 0.95);
+  }
+
+  // ---- 112-127: Dark grays down to black ----
+  PALETTE[i++] = color( 20,  20,  20);
+  PALETTE[i++] = color( 18,  18,  18);
+  PALETTE[i++] = color( 16,  16,  16);
+  PALETTE[i++] = color( 14,  14,  14);
+  PALETTE[i++] = color( 12,  12,  12);
+  PALETTE[i++] = color( 10,  10,  10);
+  PALETTE[i++] = color(  8,   8,   8);
+  PALETTE[i++] = color(  7,   7,   7);
+  PALETTE[i++] = color(  6,   6,   6);
+  PALETTE[i++] = color(  5,   5,   5);
+  PALETTE[i++] = color(  4,   4,   4);
+  PALETTE[i++] = color(  3,   3,   3);
+  PALETTE[i++] = color(  2,   2,   2);
+  PALETTE[i++] = color(  1,   1,   1);
+  PALETTE[i++] = color(  0,   0,   0);
+  PALETTE[i++] = color(  0,   0,   0);  // 127 spare black
+
+  println("Palette built: " + i + " entries.");
+}
+
+color colorFromHSB(float h, float s, float b) {
+  return color(java.awt.Color.HSBtoRGB(h / 360.0, s, b));
+}
+
 PFont getFont(int idx) {
   if (idx < 0 || idx >= FONT_COUNT) idx = 0;
   if (fonts[idx] != null) return fonts[idx];
@@ -631,6 +728,7 @@ void applyBundle(int idx) {
   pendingTransDurIdx = b.transDurIdx;
   pendingHilite      = b.hilite;
   pendingColor       = b.colorCC;
+  pendingFontColor   = b.fontColorCC;
   pendingSize        = b.size;
   pendingFontIdx     = b.fontIdx;
   pendingPosX        = b.posX;
@@ -680,7 +778,8 @@ void drawRecordStatusBar() {
   String mods = "Preset: " + presetLabel(pendingPreset)
     + "  |  trans: " + transitionName(pendingTransition) + " " + TRANS_DURATIONS[pendingTransDurIdx] + "s"
     + "  |  hilite: " + hiliteName(pendingHilite)
-    + "  |  color: " + pendingColor
+    + "  |  accent: " + pendingColor
+    + "  |  font: " + pendingFontColor
     + "  |  size: " + sizeFromCC(pendingSize);
   fill(180);
   String lineInfo = "Line " + (currentLine + 1) + "/" + lyrics.length;
@@ -733,6 +832,7 @@ void drawModifierPanel() {
     nf(TRANS_DURATIONS[pendingTransDurIdx], 0, 1) + " s",
     hiliteName(pendingHilite),
     "" + pendingColor,
+    "" + pendingFontColor,
     "" + pendingSize,
     fontNames[pendingFontIdx],
     pendingPosX + ", " + pendingPosY,
@@ -741,7 +841,7 @@ void drawModifierPanel() {
 
   String[] labels = {
     "Preset", "Transition", "Duration", "Highlight",
-    "Color", "Size", "Font", "Pos (X,Y)",
+    "Accent Color", "Font Color", "Size", "Font", "Pos (X,Y)",
     "Word Fade"
   };
 
@@ -771,8 +871,11 @@ void drawModifierPanel() {
     textAlign(LEFT, CENTER);
     text(labels[i], labelX, rowY);
     if (i == 4) {
-      color c = colorFromCC(pendingColor);
-      fill(c);
+      fill(colorFromCC(pendingColor));
+      textAlign(RIGHT, CENTER);
+      text(values[i], valueX, rowY);
+    } else if (i == 5) {
+      fill(colorFromCC(pendingFontColor));
       textAlign(RIGHT, CENTER);
       text(values[i], valueX, rowY);
     } else {
@@ -861,7 +964,8 @@ void drawEventContent(Event ev, float alphaScale, float wordFadeT, PGraphics g) 
 
   String[] presetParts = parsePreset(ev.preset);
   String presetType = presetParts[0];
-  color accent = colorFromCC(ev.colorCC);
+  color accent    = colorFromCC(ev.colorCC);
+  color textColor = colorFromCC(ev.fontColorCC);
   int sz = sizeFromCC(ev.size);
 
   int fi = indexOfFont(ev.fontName);
@@ -919,7 +1023,7 @@ void drawEventContent(Event ev, float alphaScale, float wordFadeT, PGraphics g) 
 
     drawOneLine(raw, state, wordIdx, wordFadeT, alphaScale,
       presetType, ev.hiliteStyle, isHighlight, isKaraoke, isReveal,
-      accent, sz, centerX, lineY, usingGraphics, g);
+      accent, textColor, sz, centerX, lineY, usingGraphics, g);
   }
 }
 
@@ -927,7 +1031,7 @@ void drawEventContent(Event ev, float alphaScale, float wordFadeT, PGraphics g) 
 void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
   float alphaScale, String presetType, int hiliteStyle,
   boolean isHighlight, boolean isKaraoke, boolean isReveal,
-  color accent, int sz, float centerX, float lineY,
+  color accent, color textColor, int sz, float centerX, float lineY,
   boolean usingGraphics, PGraphics g) {
 
   String[] words = split(lineText, ' ');
@@ -936,12 +1040,12 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
   if (presetType.equals("SimpleLine")) {
     if (usingGraphics) {
       g.noStroke();
-      g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
+      g.fill(red(textColor), green(textColor), blue(textColor), alphaScale);
       g.textAlign(CENTER, CENTER);
       g.text(lineText, centerX, lineY);
     } else {
       noStroke();
-      fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
+      fill(red(textColor), green(textColor), blue(textColor), alphaScale);
       textAlign(CENTER, CENTER);
       text(lineText, centerX, lineY);
     }
@@ -997,14 +1101,14 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
         if (usingGraphics) {
           g.textSize(grownSize);
           g.noStroke();
-          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
+          g.fill(red(textColor), green(textColor), blue(textColor), alphaScale * wordFadeT);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
           g.textSize(sz);
         } else {
           textSize(grownSize);
           noStroke();
-          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
+          fill(red(textColor), green(textColor), blue(textColor), alphaScale * wordFadeT);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
           textSize(sz);
@@ -1012,31 +1116,31 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
       } else if (isActiveWord && hiliteStyle == HILITE_BOLD) {
         if (usingGraphics) {
           g.noStroke();
-          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
+          g.fill(red(textColor), green(textColor), blue(textColor), alphaScale * wordFadeT);
           g.textAlign(LEFT, CENTER);
           for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++)
               g.text(words[i], x + dx * 0.7, y + dy * 0.7);
         } else {
           noStroke();
-          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * wordFadeT);
+          fill(red(textColor), green(textColor), blue(textColor), alphaScale * wordFadeT);
           textAlign(LEFT, CENTER);
           for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++)
               text(words[i], x + dx * 0.7, y + dy * 0.7);
         }
       } else if (isActiveWord && hiliteStyle == HILITE_OUTLINE) {
-        strokeText(words[i], x, y, accent, color(fontColorBase[0], fontColorBase[1], fontColorBase[2]),
+        strokeText(words[i], x, y, accent, textColor,
           alphaScale * wordFadeT, usingGraphics, g);
       } else {
         if (usingGraphics) {
           g.noStroke();
-          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
+          g.fill(red(textColor), green(textColor), blue(textColor), alphaScale);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
         } else {
           noStroke();
-          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
+          fill(red(textColor), green(textColor), blue(textColor), alphaScale);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
         }
@@ -1078,12 +1182,12 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
       if (i < currentWordOnThisLine) {
         if (usingGraphics) {
           g.noStroke();
-          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
+          g.fill(red(textColor), green(textColor), blue(textColor), alphaScale);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
         } else {
           noStroke();
-          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale);
+          fill(red(textColor), green(textColor), blue(textColor), alphaScale);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
         }
@@ -1091,12 +1195,12 @@ void drawOneLine(String lineText, int state, int wordIdx, float wordFadeT,
         float fade = (state == 1) ? wordFadeT : 1.0;
         if (usingGraphics) {
           g.noStroke();
-          g.fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * fade);
+          g.fill(red(textColor), green(textColor), blue(textColor), alphaScale * fade);
           g.textAlign(LEFT, CENTER);
           g.text(words[i], x, y);
         } else {
           noStroke();
-          fill(fontColorBase[0], fontColorBase[1], fontColorBase[2], alphaScale * fade);
+          fill(red(textColor), green(textColor), blue(textColor), alphaScale * fade);
           textAlign(LEFT, CENTER);
           text(words[i], x, y);
         }
@@ -1180,7 +1284,8 @@ void drawRecordHelp() {
     "F       transition: none / fade / grow",
     "G       cycle transition duration",
     "J       highlight: box / outline / bold / grow",
-    "K       cycle color",
+    "K       cycle accent color",
+    "C       cycle font color",
     "L       cycle size",
     "N       font: cycle through fonts folder",
     "U       word fade duration: 0 / 0.2 / 0.5 / 1.0 s",
@@ -1476,8 +1581,13 @@ void keyPressedRecord() {
     return;
   }
   if (key == 'k' || key == 'K') {
-    pendingColor = nextInCycle(pendingColor, COLOR_CYCLE);
-    println("Color: " + pendingColor);
+    pendingColor = nextInCycle(pendingColor, ACCENT_CYCLE);
+    println("Accent color: " + pendingColor);
+    return;
+  }
+  if (key == 'c' || key == 'C') {
+    pendingFontColor = nextInCycle(pendingFontColor, FONT_COLOR_CYCLE);
+    println("Font color: " + pendingFontColor);
     return;
   }
   if (key == 'l' || key == 'L') {
@@ -1657,6 +1767,7 @@ void startCountIn() {
   init.transDur     = TRANS_DURATIONS[pendingTransDurIdx];
   init.hiliteStyle  = pendingHilite;
   init.colorCC      = pendingColor;
+  init.fontColorCC  = pendingFontColor;
   init.size         = pendingSize;
   init.fontName     = fontNames[pendingFontIdx];
   init.posX         = pendingPosX;
@@ -1682,6 +1793,7 @@ void startRecordingImmediate() {
   init.transDur     = TRANS_DURATIONS[pendingTransDurIdx];
   init.hiliteStyle  = pendingHilite;
   init.colorCC      = pendingColor;
+  init.fontColorCC  = pendingFontColor;
   init.size         = pendingSize;
   init.fontName     = fontNames[pendingFontIdx];
   init.posX         = pendingPosX;
@@ -1735,6 +1847,7 @@ void curtainDown() {
   e.transDur    = 0.0;
   e.hiliteStyle = (base != null) ? base.hiliteStyle : pendingHilite;
   e.colorCC     = (base != null) ? base.colorCC     : pendingColor;
+  e.fontColorCC = (base != null) ? base.fontColorCC : pendingFontColor;
   e.size        = (base != null) ? base.size        : pendingSize;
   e.fontName    = (base != null) ? base.fontName    : fontNames[pendingFontIdx];
   e.posX        = (base != null) ? base.posX        : pendingPosX;
@@ -1765,6 +1878,7 @@ void curtainUp() {
   e.transDur    = 0.0;
   e.hiliteStyle = pendingHilite;
   e.colorCC     = pendingColor;
+  e.fontColorCC = pendingFontColor;
   e.size        = pendingSize;
   e.fontName    = fontNames[pendingFontIdx];
   e.posX        = pendingPosX;
@@ -1825,6 +1939,7 @@ void tapAdvance(boolean record) {
   e.transDur     = TRANS_DURATIONS[pendingTransDurIdx];
   e.hiliteStyle  = pendingHilite;
   e.colorCC      = pendingColor;
+  e.fontColorCC  = pendingFontColor;
   e.size         = pendingSize;
   e.fontName     = fontNames[pendingFontIdx];
   e.posX         = pendingPosX;
@@ -1868,6 +1983,7 @@ void loadTimestampsForRender() {
     if (p.length >= 13) e.posY        = int(p[12]);
     if (p.length >= 14) e.wordFade    = float(p[13]);
     if (p.length >= 15) e.visible     = int(p[14]);
+    if (p.length >= 16) e.fontColorCC = int(p[15]);
     renderEvents.add(e);
   }
   println("Loaded " + renderEvents.size() + " events from " + tsFile);
@@ -2042,6 +2158,7 @@ void exportMidi() {
     int lastPosX = -1;
     int lastPosY = -1;
     int lastWordFadeCC = -1;
+    int lastFontColor = -1;
 
     for (int i = 0; i < events.size(); i++) {
       Event e = events.get(i);
@@ -2106,6 +2223,10 @@ void exportMidi() {
       if (wordFadeCC != lastWordFadeCC) {
         addCC(track, 28, wordFadeCC, tick);
         lastWordFadeCC = wordFadeCC;
+      }
+      if (e.fontColorCC != lastFontColor) {
+        addCC(track, 29, e.fontColorCC, tick);
+        lastFontColor = e.fontColorCC;
       }
 
       // Emit the trigger note(s).
@@ -2254,7 +2375,8 @@ void saveTimestamps() {
       + "|" + e.transition + "|" + e.transDur + "|" + e.hiliteStyle
       + "|" + e.colorCC + "|" + e.size + "|" + e.fontName
       + "|" + e.posX + "|" + e.posY + "|" + e.wordFade
-      + "|" + e.visible;
+      + "|" + e.visible
+      + "|" + e.fontColorCC;
   }
   String outName = (audioPath == null || audioPath.length() == 0)
     ? "timestamps_freewheeling.txt"
@@ -2298,42 +2420,14 @@ void handleCC(int cc, int val) {
   case 28:
     pendingWordFade = map(val, 0, 127, 0.0, 2.0);    // Map 0-127 to 0.0 - 2.0 seconds
     break;
+  case 29:
+    pendingFontColor = constrain(val, 0, 127);
+    break;
   }
 }
 
 color colorFromCC(int cc) {
-  float h = map(cc, 0, 127, 0, 360);
-  float s = 1.0, v = 1.0;
-  float c = v * s;
-  float x = c * (1 - abs((h / 60.0) % 2 - 1));
-  float m = v - c;
-  float r=0, g=0, b=0;
-  if (h <  60) {
-    r=c;
-    g=x;
-    b=0;
-  } else if (h < 120) {
-    r=x;
-    g=c;
-    b=0;
-  } else if (h < 180) {
-    r=0;
-    g=c;
-    b=x;
-  } else if (h < 240) {
-    r=0;
-    g=x;
-    b=c;
-  } else if (h < 300) {
-    r=x;
-    g=0;
-    b=c;
-  } else {
-    r=c;
-    g=0;
-    b=x;
-  }
-  return color((r+m)*255, (g+m)*255, (b+m)*255);
+  return PALETTE[constrain(cc, 0, 127)];
 }
 
 int sizeFromCC(int cc) {
@@ -2343,7 +2437,7 @@ int sizeFromCC(int cc) {
 
 int nextInCycle(int current, int[] cycle) {
   for (int i = 0; i < cycle.length; i++) {
-    if (cycle[i] > current) return cycle[i];
+    if (cycle[i] == current) return cycle[(i + 1) % cycle.length];
   }
   return cycle[0];
 }
@@ -2354,6 +2448,7 @@ void captureHomeState() {
   homeTransDurIdx = pendingTransDurIdx;
   homeHilite      = pendingHilite;
   homeColor       = pendingColor;
+  homeFontColor   = pendingFontColor;
   homeSize        = pendingSize;
   homeFontIdx     = pendingFontIdx;
   homePosX        = pendingPosX;
@@ -2368,6 +2463,7 @@ void restoreHomeState() {
   pendingTransDurIdx = homeTransDurIdx;
   pendingHilite      = homeHilite;
   pendingColor       = homeColor;
+  pendingFontColor   = homeFontColor;
   pendingSize        = homeSize;
   pendingFontIdx     = homeFontIdx;
   pendingPosX        = homePosX;
@@ -2388,6 +2484,7 @@ void resetToStart() {
   reset.transDur    = TRANS_DURATIONS[pendingTransDurIdx];
   reset.hiliteStyle = pendingHilite;
   reset.colorCC     = pendingColor;
+  reset.fontColorCC = pendingFontColor;
   reset.size        = pendingSize;
   reset.fontName    = fontNames[pendingFontIdx];
   reset.posX        = pendingPosX;
@@ -2398,7 +2495,8 @@ void resetToStart() {
   currentEventStartMs = millis();
 
   println("Reset to line 0. preset=" + reset.preset
-    + " color=" + reset.colorCC + " size=" + reset.size
+    + " accent=" + reset.colorCC + " font=" + reset.fontColorCC
+    + " size=" + reset.size
     + " pos=" + reset.posX + "," + reset.posY);
 }
 void drawReference() {
@@ -2438,7 +2536,8 @@ void drawReference() {
     "F       transition: none / fade / grow",
     "G       transition duration: 0.3 / 0.6 / 1.0 s",
     "J       highlight: box / outline / bold / grow",
-    "K       color (cycles presets)",
+    "K       cycle accent color",
+    "C       cycle font color",
     "L       size (cycles presets)",
     "N       font (cycles fonts folder)",
     "U       word fade duration: 0 / 0.2 / 0.5 / 1.0 s",
@@ -2493,7 +2592,8 @@ void drawReference() {
       + "  [preset=" + presetLabel(b.preset)
       + " trans=" + transitionName(b.transition)
       + " hilite=" + hiliteName(b.hilite)
-      + " color=" + b.colorCC
+      + " accent=" + b.colorCC
+      + " font=" + b.fontColorCC
       + " size=" + b.size
       + " pos=" + b.posX + "," + b.posY + "]",
       col2X, topY + 220 + i * lineHeight);
@@ -2510,11 +2610,13 @@ void drawReference() {
     "20    Transition type (0-2)",
     "21    Transition duration (0-2)",
     "22    Highlight style (0-3)",
-    "23    Color (0-127)",
+    "23    Accent color (palette index 0-127)",
     "24    Size (0-127)",
     "25    Font index",
     "26    Position X (0-127, 64 = center)",
-    "27    Position Y (0-127, 64 = center)"
+    "27    Position Y (0-127, 64 = center)",
+    "28    Word fade duration (0-127)",
+    "29    Font color (palette index 0-127)"
   };
   for (int i = 0; i < ccs.length; i++) {
     text(ccs[i], col3X, topY + 30 + i * lineHeight);
@@ -2550,7 +2652,7 @@ void startRenderFromRecord() {
 }
 float nextFloatInCycle(float current, float[] cycle) {
   for (int i = 0; i < cycle.length; i++) {
-    if (cycle[i] > current + 0.001) return cycle[i];
+    if (abs(cycle[i] - current) < 0.001) return cycle[(i + 1) % cycle.length];
   }
   return cycle[0];
 }

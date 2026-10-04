@@ -16,7 +16,8 @@ composite over a music video in any editor.
 
 - Play your song and tap along to time each lyric line or word.
 - Style the lyrics with four different animation classes, a
-  dozen parameters, and per-event overrides.
+  dozen parameters, per-event overrides, and independent
+  accent and font colors drawn from a 128-color palette.
 - Export the timing as a MIDI file, edit it in your DAW, and
   play it back to drive the visuals.
 - Render a transparent video file (PNG-in-MOV or ProRes 4444)
@@ -135,7 +136,8 @@ See MIDI_REFERENCE.txt for the full stanza reference.
    F        cycle transition
    G        cycle transition duration
    J        cycle highlight style
-   K        cycle color
+   K        cycle accent color
+   C        cycle font color
    L        cycle size
    U        cycle word fade duration
    N        cycle font
@@ -257,6 +259,14 @@ back into the sketch to re-render.
   Visuals look different from what I recorded
   -> Bundles, home state, and CC defaults can be overwritten by
      a DAW on stop. Press P to re-capture the home state.
+
+  Text is invisible or blending into the background
+  -> Check the font color. Press C in the sketch to cycle it, or
+     send CC 29 from your DAW. CC 0 is white, CC 127 is black,
+     CC 16 is red. If you set the font to black for a light
+     background, remember to also check the accent color (CC 23,
+     cycled with K) — a black accent under black text will make
+     highlights disappear too.
 
 
 ================================================================
